@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
+import { useState } from 'react';
 import ExpertsList from './pages/ExpertsList';
 import ExpertDetail from './pages/ExpertDetail';
 import MyBookings from './pages/MyBookings';
@@ -25,6 +26,11 @@ function NavLink({ to, children }) {
 
 function Navigation() {
   const { user, logout } = useAuth();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const initials = user
+    ? user.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+    : '';
 
   return (
     <header className="sticky top-0 z-50 glass border-b border-surface-200 shadow-sm">
@@ -46,19 +52,49 @@ function Navigation() {
             <NavLink to="/my-bookings">My Sessions</NavLink>
           </nav>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
             {user ? (
-              <>
-                <span className="hidden md:inline text-sm font-semibold text-surface-600">
-                  Welcome, <span className="text-brand-700">{user.name.split(' ')[0]}</span>!
-                </span>
+              <div className="relative">
                 <button
-                  onClick={logout}
-                  className="bg-surface-100 hover:bg-red-50 text-surface-700 hover:text-red-600 px-5 py-2.5 rounded-full text-sm font-bold transition-all border border-surface-200 shadow-sm"
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="flex items-center gap-2.5 bg-white border border-surface-200 hover:border-brand-300 rounded-full pl-1.5 pr-4 py-1.5 shadow-sm transition-all hover:shadow-md group"
                 >
-                  Sign Out
+                  <div className="w-8 h-8 bg-gradient-to-br from-brand-600 to-purple-600 rounded-full flex items-center justify-center text-white font-extrabold text-xs shadow-inner flex-shrink-0">
+                    {initials}
+                  </div>
+                  <span className="hidden md:block text-sm font-bold text-surface-700 group-hover:text-brand-700 transition-colors">
+                    {user.name.split(' ')[0]}
+                  </span>
+                  <svg className={`w-4 h-4 text-surface-400 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
                 </button>
-              </>
+
+                {/* Dropdown */}
+                {dropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-surface-100 py-2 z-50 animate-fade-in">
+                    <div className="px-4 py-3 border-b border-surface-100">
+                      <p className="font-extrabold text-surface-900 text-sm">{user.name}</p>
+                      <p className="text-surface-400 text-xs mt-0.5 truncate">{user.email}</p>
+                    </div>
+                    <Link
+                      to="/my-bookings"
+                      onClick={() => setDropdownOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-surface-700 hover:bg-surface-50 hover:text-brand-600 font-semibold transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                      My Sessions
+                    </Link>
+                    <button
+                      onClick={() => { logout(); setDropdownOpen(false); }}
+                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 font-bold transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               <>
                 <Link to="/login" className="hidden md:block text-surface-700 hover:text-brand-600 text-sm font-bold transition-colors">
